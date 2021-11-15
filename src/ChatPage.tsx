@@ -176,6 +176,14 @@ function ChatPageInner({
             style={{flex: "1", fontSize: "1em", fontFamily: "sans-serif"}}
             value={compose}
             onChange={(e) => setCompose(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                sendMessage(mysky, myId, counterpartyId, sharedKey!, compose);
+                setCompose("");
+              }
+            }}
           />
           <button
             onClick={() => {
