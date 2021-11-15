@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import {genKeyPairAndSeed, SkynetClient, MySky, JsonData} from "skynet-js";
 import {
   Routes,
   Route,
@@ -13,8 +12,6 @@ import {useNavigate} from "react-router-dom";
 import "./App.css";
 import ChatPage from "./ChatPage";
 import MyskyProvider, {useMysky} from "./MyskyProvider";
-import KeyProvider from "./KeyProvider";
-import MessagesProvider from "./MessagesProvider";
 import AuthedContainer from "./AuthedContainer";
 import {addChat, Chat, getChats} from "./services/chatList";
 import SkynetId from "./SkynetId";
@@ -172,31 +169,27 @@ function RequireAuth({children}: {children: JSX.Element}) {
 function App() {
   return (
     <MyskyProvider>
-      <KeyProvider>
-        <MessagesProvider>
-          <HashRouter>
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <RequireAuth>
-                    <HomePage />
-                  </RequireAuth>
-                }
-              />
-              <Route path="/login" element={<LoginPage />} />
-              <Route
-                path="/chat/:counterpartyId"
-                element={
-                  <RequireAuth>
-                    <ChatPage />
-                  </RequireAuth>
-                }
-              />
-            </Routes>
-          </HashRouter>
-        </MessagesProvider>
-      </KeyProvider>
+      <HashRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <RequireAuth>
+                <HomePage />
+              </RequireAuth>
+            }
+          />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/chat/:counterpartyId"
+            element={
+              <RequireAuth>
+                <ChatPage />
+              </RequireAuth>
+            }
+          />
+        </Routes>
+      </HashRouter>
     </MyskyProvider>
   );
 }
