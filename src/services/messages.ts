@@ -39,14 +39,14 @@ async function decryptMessages(
   return decoded.messages;
 }
 
-async function encryptMessages(
-  key: CryptoKey,
-  messages: Array<Message>
-): Promise<ArrayBuffer> {
-  const message = JSON.stringify({messages});
-  const encrypted = await encrypt(key, message);
-  return combineMessage(encrypted);
-}
+// async function encryptMessages(
+//   key: CryptoKey,
+//   messages: Array<Message>
+// ): Promise<ArrayBuffer> {
+//   const message = JSON.stringify({messages});
+//   const encrypted = await encrypt(key, message);
+//   return combineMessage(encrypted);
+// }
 
 // HACK:
 // Contract: if merge does not add any new messages, it will be equal to the first argument
