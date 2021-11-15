@@ -179,7 +179,13 @@ function ChatPageInner({
               key={m.id}
             >
               <SkynetId id={m.author} />
-              <div style={{marginLeft: "0.5em"}}>{m.content}</div>
+              <div style={{marginLeft: "0.5em"}}>
+                {m.content.split("\n").map((line, i) => (
+                  <p className="message-line" key={i}>
+                    {line}
+                  </p>
+                ))}
+              </div>
             </li>
           ))}
         </ul>
