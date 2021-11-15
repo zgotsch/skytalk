@@ -2,7 +2,11 @@ import {useCallback, useEffect, useRef, useState} from "react";
 import {useParams} from "react-router";
 import {MySky} from "skynet-js";
 import AuthedContainer from "./AuthedContainer";
-import {Message, messages, sendMessage} from "./services/messages";
+import {
+  Message,
+  getMessages as fetchMessages,
+  sendMessage,
+} from "./services/messages";
 import {useMysky} from "./MyskyProvider";
 import {getSharedKey} from "./services/keys";
 import SkynetId from "./SkynetId";
@@ -75,7 +79,7 @@ function ChatPageInner({
     if (sharedKey == null) {
       return;
     }
-    messages(mysky, myId, counterpartyId, sharedKey).then((res) => {
+    fetchMessages(mysky, myId, counterpartyId, sharedKey).then((res) => {
       if (res.status === "success") {
         setState({status: "connected", messages: res.messages});
       } else if (res.status === "counterparty_not_connected") {

@@ -48,33 +48,30 @@ async function decryptMessages(
 //   return combineMessage(encrypted);
 // }
 
-// HACK:
-// Contract: if merge does not add any new messages, it will be equal to the first argument
 function mergeMessages(
   myMessages: Array<Message>,
   theirMessages: ReadonlyArray<Message>
-): Array<Message> {
+): {
+  merged: Array<Message>;
+  needAddition: Array<Message>;
+} {
   const mySeenIds = new Set(myMessages.map((m) => m.id));
   const theirMessagesById = new Map(theirMessages.map((m) => [m.id, m]));
 
-  let sawNewMessage = false;
   const mergedMessages = [...myMessages];
+  const needAddition = [];
   const now = new Date().toISOString();
   for (const id of theirMessagesById.keys()) {
     if (!mySeenIds.has(id)) {
-      sawNewMessage = true;
       const theirMessage = theirMessagesById.get(id)!;
       const myVersion = {...theirMessage, receivedAt: now};
       mergedMessages.push(myVersion);
+      needAddition.push(myVersion);
     }
   }
 
-  if (!sawNewMessage) {
-    return myMessages;
-  }
-
   mergedMessages.sort((a, b) => (a.receivedAt > b.receivedAt ? 1 : -1));
-  return mergedMessages;
+  return {merged: mergedMessages, needAddition};
 }
 
 function arrayBufferToB64(buffer: ArrayBuffer): string {
@@ -146,16 +143,16 @@ async function writeMyMessages(
   });
 }
 
-export async function messages(
+export async function getMessages(
   mysky: MySky,
   myId: UserId,
   counterpartyId: UserId,
   sharedKey: CryptoKey
 ): Promise<MessagesResult> {
   let myMessages = await getMyMessages(mysky, counterpartyId, sharedKey);
+  // This is actually fine, just act like there are no messages
   if (myMessages == null) {
     myMessages = [];
-    writeMyMessages(mysky, counterpartyId, sharedKey, myMessages);
   }
 
   let theirMessages = await getCounterPartyMessages(
@@ -164,17 +161,17 @@ export async function messages(
     counterpartyId,
     sharedKey
   );
+  // This is actually fine, just act like there are no messages
   if (theirMessages == null) {
-    return {
-      status: "counterparty_not_connected",
-      counterparty: counterpartyId,
-    };
+    theirMessages = [];
   }
 
-  const merged = mergeMessages(myMessages, theirMessages);
-  if (merged !== myMessages) {
-    writeMyMessages(mysky, counterpartyId, sharedKey, merged);
+  const {merged, needAddition} = mergeMessages(myMessages, theirMessages);
+
+  for (const newMessage of needAddition) {
+    enqueueMessage(newMessage, counterpartyId);
   }
+  await drainQueue(mysky, counterpartyId, sharedKey);
 
   return {
     status: "success",
@@ -190,7 +187,7 @@ export async function sendMessage(
   message: string
 ): Promise<void> {
   const now = new Date().toISOString();
-  const myMessage = {
+  const newMessage = {
     id: uuidV4(),
     sentAt: now,
     receivedAt: now,
@@ -198,10 +195,60 @@ export async function sendMessage(
     content: message,
   };
 
+  enqueueMessage(newMessage, counterpartyId);
+  await drainQueue(mysky, counterpartyId, sharedKey);
+}
+
+type QueueAction = {
+  type: "addMessage";
+  counterpartyId: UserId;
+  message: Message;
+};
+
+let updatePending = false;
+let queue: Array<QueueAction> = [];
+function enqueueMessage(message: Message, counterpartyId: UserId) {
+  queue.push({type: "addMessage", counterpartyId, message});
+}
+async function drainQueue(
+  mysky: MySky,
+  counterpartyId: UserId,
+  sharedKey: CryptoKey
+) {
+  if (queue.length === 0) {
+    return;
+  }
+  if (updatePending) {
+    return;
+  }
+  updatePending = true;
+
   let myMessages = await getMyMessages(mysky, counterpartyId, sharedKey);
   if (myMessages == null) {
+    console.log(
+      "Got no messages in drainQueue, assuming there are no messages"
+    );
     myMessages = [];
   }
-  myMessages.push(myMessage);
-  return writeMyMessages(mysky, counterpartyId, sharedKey, myMessages);
+
+  const toAdd = queue;
+  queue = [];
+
+  for (const action of toAdd) {
+    if (action.counterpartyId !== counterpartyId) {
+      console.log("Dropping queued message: ", action);
+      continue;
+    }
+
+    const myMessageIds = new Set(myMessages.map((m) => m.id));
+    if (!myMessageIds.has(action.message.id)) {
+      myMessages.push(action.message);
+    }
+  }
+  await writeMyMessages(mysky, counterpartyId, sharedKey, myMessages);
+
+  updatePending = false;
+  if (queue.length > 0) {
+    await drainQueue(mysky, counterpartyId, sharedKey);
+  }
 }
