@@ -1,7 +1,5 @@
 import {JsonData, MySky, SkynetClient} from "skynet-js";
-
-const dataDomain =
-  "0401m4q82jvo94b6huj99cavs903ogr42u8vd91bf89hvpbeh7nf42g.siasky.net";
+import {dataDomain} from "./skynetClient";
 
 type UserId = string;
 
