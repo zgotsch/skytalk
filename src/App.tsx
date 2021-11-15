@@ -15,6 +15,8 @@ import MyskyProvider, {useMysky} from "./MyskyProvider";
 import AuthedContainer from "./AuthedContainer";
 import {addChat, Chat, getChats} from "./services/chatList";
 import SkynetId from "./SkynetId";
+import {getMyKeyPair, writeMyKey} from "./utils";
+import {generateKeyPair} from "./crypto";
 
 // when launching, write my own public key
 
@@ -148,10 +150,29 @@ function LoginPage() {
 }
 
 function RequireAuth({children}: {children: JSX.Element}) {
-  let {mysky, loginStatus} = useMysky();
-  let location = useLocation();
+  const {mysky, loginStatus} = useMysky();
+  const location = useLocation();
 
-  if (mysky == null || loginStatus === "unknown") {
+  const [hasKeyPair, setHasKeyPair] = useState<boolean>(false);
+  // HACK: write key pair
+  useEffect(() => {
+    async function go() {
+      if (mysky == null) {
+        return;
+      }
+      const myKeyPair = await getMyKeyPair(mysky);
+      if (myKeyPair == null) {
+        const newKeyPair = await generateKeyPair();
+        await writeMyKey(mysky, newKeyPair);
+        setHasKeyPair(true);
+      } else {
+        setHasKeyPair(true);
+      }
+    }
+    go();
+  }, [mysky]);
+
+  if (mysky == null || loginStatus === "unknown" || !hasKeyPair) {
     return <div>Loading...</div>;
   }
 
