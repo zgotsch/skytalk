@@ -93,7 +93,7 @@ function ChatPageInner({
 
   useInterval(() => {
     getMessages();
-  }, 1200);
+  }, 2000);
 
   const [compose, setCompose] = useState("");
 
