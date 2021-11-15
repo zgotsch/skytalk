@@ -69,7 +69,12 @@ function mergeMessages(
     }
   }
 
-  mergedMessages.sort((a, b) => (a.receivedAt > b.receivedAt ? 1 : -1));
+  mergedMessages.sort((a, b) => {
+    if (a.receivedAt === b.receivedAt) {
+      return a.sentAt > b.sentAt ? 1 : -1;
+    }
+    return a.receivedAt > b.receivedAt ? 1 : -1;
+  });
   return {merged: mergedMessages, needAddition};
 }
 
