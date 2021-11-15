@@ -1,5 +1,4 @@
 import {MySky} from "skynet-js";
-import {v4 as uuidV4} from "uuid";
 import {combineMessage, decrypt, encrypt, extractMessage} from "../crypto";
 import skynetClient, {dataDomain} from "../skynetClient";
 
@@ -184,18 +183,9 @@ export async function sendMessage(
   myId: UserId,
   counterpartyId: UserId,
   sharedKey: CryptoKey,
-  message: string
+  message: Message
 ): Promise<void> {
-  const now = new Date().toISOString();
-  const newMessage = {
-    id: uuidV4(),
-    sentAt: now,
-    receivedAt: now,
-    author: myId,
-    content: message,
-  };
-
-  enqueueMessage(newMessage, counterpartyId);
+  enqueueMessage(message, counterpartyId);
   await drainQueue(mysky, counterpartyId, sharedKey);
 }
 

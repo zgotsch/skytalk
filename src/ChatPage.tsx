@@ -1,6 +1,8 @@
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useParams} from "react-router";
 import {MySky} from "skynet-js";
+import {v4 as uuidV4} from "uuid";
+
 import AuthedContainer from "./AuthedContainer";
 import {
   Message,
@@ -75,12 +77,35 @@ function ChatPageInner({
     };
   }, [mysky, myId, counterpartyId]);
 
-  const getMessages = useCallback(() => {
+  const [pendingMessages, setPendingMessages] = useState<Array<Message>>([]);
+  function submitMessage(message: string): boolean {
+    if (sharedKey == null) {
+      console.log("Tried to send a message with no shared key");
+      return false;
+    }
+    const now = new Date().toISOString();
+    const newMessage = {
+      id: uuidV4(),
+      sentAt: now,
+      receivedAt: now,
+      author: myId,
+      content: compose,
+    };
+    setPendingMessages([...pendingMessages, newMessage]);
+    sendMessage(mysky, myId, counterpartyId, sharedKey, newMessage);
+    return true;
+  }
+
+  function getMessages() {
     if (sharedKey == null) {
       return;
     }
     fetchMessages(mysky, myId, counterpartyId, sharedKey).then((res) => {
       if (res.status === "success") {
+        const seenIds = new Set(res.messages.map((m) => m.id));
+        setPendingMessages((messages) =>
+          messages.filter((m) => !seenIds.has(m.id))
+        );
         setState({status: "connected", messages: res.messages});
       } else if (res.status === "counterparty_not_connected") {
         setState({status: "counterparty_not_connected"});
@@ -89,11 +114,13 @@ function ChatPageInner({
         setState({status: "error", errorMessage: res.message});
       }
     });
-  }, [mysky, myId, counterpartyId, sharedKey]);
+  }
 
   useEffect(() => {
     getMessages();
-  }, [getMessages]);
+    // HACK
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mysky, sharedKey, counterpartyId]);
 
   useInterval(() => {
     getMessages();
@@ -141,31 +168,29 @@ function ChatPageInner({
             minHeight: 0,
           }}
         >
-          {state.messages
-            .slice(0)
-            .reverse()
-            .map((m) => (
-              <li
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  listStyle: "none",
-                  margin: "0.4em 0",
-                }}
-                key={m.id}
-              >
-                <SkynetId id={m.author} />
-                <div style={{marginLeft: "0.5em"}}>{m.content}</div>
-              </li>
-            ))}
+          {[...state.messages, ...pendingMessages].reverse().map((m) => (
+            <li
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                listStyle: "none",
+                margin: "0.4em 0",
+              }}
+              key={m.id}
+            >
+              <SkynetId id={m.author} />
+              <div style={{marginLeft: "0.5em"}}>{m.content}</div>
+            </li>
+          ))}
         </ul>
         <form
           style={{display: "flex"}}
           onSubmit={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            sendMessage(mysky, myId, counterpartyId, sharedKey!, compose);
-            setCompose("");
+            if (submitMessage(compose)) {
+              setCompose("");
+            }
           }}
         >
           <SkynetId
@@ -180,8 +205,9 @@ function ChatPageInner({
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 e.stopPropagation();
-                sendMessage(mysky, myId, counterpartyId, sharedKey!, compose);
-                setCompose("");
+                if (submitMessage(compose)) {
+                  setCompose("");
+                }
               }
             }}
           />
