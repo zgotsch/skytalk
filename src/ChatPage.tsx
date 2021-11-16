@@ -237,7 +237,7 @@ function ChatPageInner({
       }}
     >
       <h2>
-        Chatting with <SkynetUser id={counterpartyId} />
+        Chatting with <SkynetUser id={counterpartyId} showDetails />
       </h2>
       <div style={{marginBottom: "2em"}}>
         They can chat with you at{" "}
