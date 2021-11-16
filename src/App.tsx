@@ -156,9 +156,9 @@ function LoginPage() {
       <img
         style={{borderRadius: "40px"}}
         src="/android-chrome-192x192.png"
-        alt="SkyChat logo"
+        alt="SkyTalk logo"
       />
-      <h1 style={{color: "#00a000"}}>SkyChat</h1>
+      <h1 style={{color: "#00a000"}}>SkyTalk</h1>
       <button
         onClick={() => {
           if (tryLogin == null) {

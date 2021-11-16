@@ -37,11 +37,11 @@ export default function AuthedContainer({
             <img
               src="/mstile-70x70.png"
               style={{height: "100%"}}
-              alt="SkyChat logo"
+              alt="SkyTalk logo"
             />
           </Link>
           <Link style={{textDecoration: "none", color: "inherit"}} to="/">
-            <span style={{fontSize: "1em"}}>SkyChat</span>
+            <span style={{fontSize: "1em"}}>SkyTalk</span>
           </Link>
         </div>
         <div style={{paddingRight: "0.5em"}}>
