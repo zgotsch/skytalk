@@ -14,7 +14,7 @@ import ChatPage from "./ChatPage";
 import MyskyProvider, {useMysky} from "./MyskyProvider";
 import AuthedContainer from "./AuthedContainer";
 import {addChat, Chat, getChats} from "./services/chatList";
-import SkynetId from "./SkynetId";
+import SkynetUser from "./SkynetUser";
 import {getMyKeyPair, writeMyKey} from "./utils";
 import {generateKeyPair} from "./crypto";
 
@@ -65,10 +65,10 @@ function HomePage() {
             {chats.map((chat) => (
               <li style={{margin: "1em"}} key={chat.counterpartyId}>
                 <Link
-                  style={{textDecoration: "none"}}
+                  style={{textDecoration: "none", color: "inherit"}}
                   to={`/chat/${chat.counterpartyId}`}
                 >
-                  <SkynetId id={chat.counterpartyId} />
+                  <SkynetUser id={chat.counterpartyId} showDetails />
                 </Link>
               </li>
             ))}

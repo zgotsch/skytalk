@@ -11,7 +11,7 @@ import {
 } from "./services/messages";
 import {useMysky} from "./MyskyProvider";
 import {getSharedKey} from "./services/keys";
-import SkynetId from "./SkynetId";
+import SkynetUser from "./SkynetUser";
 import {addChat} from "./services/chatList";
 
 type State =
@@ -135,7 +135,7 @@ function ChatPageInner({
     inner = (
       <div>
         <h3>
-          <SkynetId id={counterpartyId} /> is not connected
+          <SkynetUser id={counterpartyId} /> is not connected
         </h3>
         <p>
           They can navigate to{" "}
@@ -178,7 +178,7 @@ function ChatPageInner({
               }}
               key={m.id}
             >
-              <SkynetId id={m.author} />
+              <SkynetUser id={m.author} />
               <div style={{marginLeft: "0.5em", whiteSpace: "pre-wrap"}}>
                 {m.content}
               </div>
@@ -195,7 +195,7 @@ function ChatPageInner({
             }
           }}
         >
-          <SkynetId
+          <SkynetUser
             id={myId}
             style={{alignSelf: "center", marginRight: "0.5em"}}
           />
@@ -237,7 +237,7 @@ function ChatPageInner({
       }}
     >
       <h2>
-        Chatting with <SkynetId id={counterpartyId} />
+        Chatting with <SkynetUser id={counterpartyId} />
       </h2>
       <div style={{marginBottom: "2em"}}>
         They can chat with you at{" "}

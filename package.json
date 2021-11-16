@@ -6,6 +6,7 @@
     "@babel/core": "7.12.3",
     "@babel/plugin-proposal-numeric-separator": "7.12.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
+    "@skynethub/userprofile-library": "^0.1.16-beta",
     "@svgr/webpack": "5.5.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
