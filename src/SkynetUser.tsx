@@ -79,9 +79,6 @@ export default function SkynetUser({
       style={{
         display: "inline-flex",
         alignItems: "baseline",
-        padding: "0.4em",
-        borderRadius: "5px",
-        backgroundColor: "#ddd",
         ...style,
       }}
     >
@@ -89,17 +86,29 @@ export default function SkynetUser({
         <img
           src={profileImgSrc}
           style={{
-            width: "20px",
-            height: "20px",
+            width: "1.8em",
+            height: "1.8em",
             borderRadius: "50%",
             marginRight: "0.5em",
             alignSelf: "center",
             backgroundColor: "#fff",
+            border: "1px solid #aaa",
+            // marginTop: "-0.15em",
           }}
           alt="Avatar"
         />
       ) : null}
-      <span style={{fontWeight: "bold"}}>{profile.username}</span>
+      <span
+        style={{
+          fontWeight: "bold",
+          alignItems: "baseline",
+          padding: "0.4em",
+          borderRadius: "5px",
+          backgroundColor: "#ddd",
+        }}
+      >
+        {profile.username}
+      </span>
       {showDetails && (profile.firstName || profile.lastName) ? (
         <>
           &nbsp;

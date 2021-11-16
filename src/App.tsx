@@ -17,6 +17,7 @@ import {addChat, Chat, getChats} from "./services/chatList";
 import SkynetUser from "./SkynetUser";
 import {getMyKeyPair, writeMyKey} from "./utils";
 import {generateKeyPair} from "./crypto";
+import {IUserProfile} from "@skynethub/userprofile-library/dist/types";
 
 // when launching, write my own public key
 
@@ -27,7 +28,7 @@ import {generateKeyPair} from "./crypto";
 // then read the other person's chat file
 
 function HomePage() {
-  const {mysky, userId, logout} = useMysky();
+  const {mysky, userId, logout, getUserProfile} = useMysky();
   const [newChatValue, setNewChatValue] = useState("");
   let navigate = useNavigate();
 
@@ -47,6 +48,21 @@ function HomePage() {
     });
   }, [mysky]);
 
+  const [profile, setProfile] = useState<null | IUserProfile>(null);
+  useEffect(() => {
+    if (userId == null) {
+      return;
+    }
+    if (getUserProfile) {
+      getUserProfile(userId).then((profile) => {
+        setProfile(profile);
+      });
+    }
+    return () => {
+      setProfile(null);
+    };
+  }, [getUserProfile, userId]);
+
   return (
     <AuthedContainer
       onLogout={() => {
@@ -60,6 +76,18 @@ function HomePage() {
         <div>Loading...</div>
       ) : (
         <div>
+          {profile != null && profile.username === "anonymous" ? (
+            <div
+              style={{
+                marginTop: "1em",
+                padding: "1em",
+                backgroundColor: "rgba(200, 200, 0, 0.2)",
+              }}
+            >
+              You don't seem to have your profile information set. You can set
+              it on <a href="https://skyprofile.hns.siasky.net/">SkyProfile</a>
+            </div>
+          ) : null}
           <h3>Open chats</h3>
           <ul>
             {chats.map((chat) => (
